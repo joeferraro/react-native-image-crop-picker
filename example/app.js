@@ -56,7 +56,7 @@ export default class App extends Component {
       cropping: cropit,
       includeBase64: true
     }).then(image => {
-      console.log('received image', image);
+      console.log('received base64 image');
       this.setState({
         image: {uri: `data:${image.mime};base64,`+ image.data, width: image.width, height: image.height},
         images: null
@@ -83,6 +83,27 @@ export default class App extends Component {
     })
   }
 
+  cropLast() {
+    if (!this.state.image) {
+      return Alert.alert('No image', 'Before open cropping only, please select image');
+    }
+
+    ImagePicker.openCropper({
+      path: this.state.image.uri,
+      width: 200,
+      height: 200
+    }).then(image => {
+      console.log('received cropped image', image);
+      this.setState({
+        image: {uri: image.path, width: image.width, height: image.height, mime: image.mime},
+        images: null
+      });
+    }).catch(e => {
+      console.log(e);
+      Alert.alert(e.message ? e.message : e);
+    });
+  }
+
   pickSingle(cropit, circular=false) {
     ImagePicker.openPicker({
       width: 300,
@@ -107,7 +128,8 @@ export default class App extends Component {
 
   pickMultiple() {
     ImagePicker.openPicker({
-      multiple: true
+      multiple: true,
+      waitAnimationEnd: false
     }).then(images => {
       this.setState({
         image: null,
@@ -170,6 +192,9 @@ export default class App extends Component {
       </TouchableOpacity>
       <TouchableOpacity onPress={() => this.pickSingle(false)} style={styles.button}>
         <Text style={styles.text}>Select Single</Text>
+      </TouchableOpacity>
+      <TouchableOpacity onPress={() => this.cropLast()} style={styles.button}>
+        <Text style={styles.text}>Crop Last Selected Image</Text>
       </TouchableOpacity>
       <TouchableOpacity onPress={() => this.pickSingleBase64(false)} style={styles.button}>
         <Text style={styles.text}>Select Single Returning Base64</Text>
